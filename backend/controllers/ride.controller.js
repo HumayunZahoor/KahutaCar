@@ -4,6 +4,10 @@ import Driver from "../models/driver.model.js";
 import Admin from "../models/admin.model.js";
 import RentRequest from "../models/rentReq.model.js";
 import Stripe from 'stripe';
+import dotenv from 'dotenv';
+dotenv.config();
+
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
 
 export const bookRide = async (req, res) => {
@@ -114,7 +118,7 @@ export const getMyRides = async (req, res) => {
 
 // ------------------------------------------------
 
-const stripe = new Stripe('sk_test_51PrAEqKzHh91dh6pWPuz8kVAlRuAQRrQUP03KsYktxHtBC60L2NjjFgduMtZo2SKwNCX5dDPdrWxjX7d5OwZO6M400yk1AlAXi');
+// const stripe = new Stripe('sk_test_51PrAEqKzHh91dh6pWPuz8kVAlRuAQRrQUP03KsYktxHtBC60L2NjjFgduMtZo2SKwNCX5dDPdrWxjX7d5OwZO6M400yk1AlAXi');
 
 
 export const updateRideStatusbyCustomer = async (req, res) => {
@@ -253,6 +257,7 @@ export const createRentRequest = async (req, res) => {
       requested_vehicle,
       days: days || 0,
       totalPrice,
+      paid: false
     });
 
     await rentRequest.save();
@@ -274,5 +279,53 @@ export const getRentRequestsByCustomer = async (req, res) => {
     res.status(200).json(rentRequests);
   } catch (error) {
     res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+
+
+// --------------------------------------------
+
+
+export const payRent = async (req, res) => {
+  try {
+    const { rentRequestId, totalPrice, userId } = req.body;
+
+    if (!rentRequestId || !totalPrice || !userId) {
+      return res.status(400).json({ message: "Missing required fields" });
+    }
+
+    // Fetch the rent request
+    const rentRequest = await RentRequest.findById(rentRequestId);
+    if (!rentRequest) {
+      return res.status(404).json({ message: "Rent request not found" });
+    }
+    rentRequest.paid = true;
+    await rentRequest.save();
+
+    // Create Stripe Checkout Session
+    const session = await stripe.checkout.sessions.create({
+      payment_method_types: ["card"],
+      line_items: [
+        {
+          price_data: {
+            currency: "usd",
+            product_data: {
+              name: `Rent for ${rentRequest.requested_vehicle}`,
+            },
+            unit_amount: totalPrice * 100, // Convert to cents
+          },
+          quantity: 1,
+        },
+      ],
+      mode: "payment",
+      success_url: `${process.env.FRONTEND_URL}/KahutaCarGo/Success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${process.env.FRONTEND_URL}/KahutaCarGo/Cancel`,
+      metadata: { rentRequestId, userId },
+    });
+
+    res.json({ sessionId: session.id });
+  } catch (error) {
+    console.error("Stripe Checkout Error:", error);
+    res.status(500).json({ message: "Payment processing failed" });
   }
 };

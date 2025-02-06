@@ -2,6 +2,9 @@ import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import axios from "axios";
 import { toast } from "react-toastify";
+import { loadStripe } from "@stripe/stripe-js";
+
+const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY);
 
 const MyRentRequests = () => {
   const auth = useSelector((state) => state.auth);
@@ -12,19 +15,14 @@ const MyRentRequests = () => {
 
   useEffect(() => {
     const fetchRequests = async () => {
-      if (!userId) {
-        // toast.error("User ID is missing!");
-        return;
-      }
-      
+      if (!userId) return;
       try {
         const response = await axios.get(
           `${import.meta.env.VITE_APP_BACKEND_URL}/ride/rent-requests/${userId}`
         );
         setRequests(response.data);
-        console.log(response.data);
       } catch (error) {
-        // toast.error("Failed to load rent requests.");
+        toast.error("Failed to load rent requests.");
       } finally {
         setLoading(false);
       }
@@ -32,6 +30,26 @@ const MyRentRequests = () => {
 
     fetchRequests();
   }, [userId]);
+
+  const handlePayment = async (rentRequestId, totalPrice) => {
+    try {
+      const stripe = await stripePromise;
+      const response = await axios.post(
+        `${import.meta.env.VITE_APP_BACKEND_URL}/ride/pay-rent`,
+        { rentRequestId, totalPrice, userId }
+      );
+
+      const { sessionId } = response.data;
+
+      if (!sessionId) throw new Error("Failed to create a checkout session.");
+
+      // Redirect to Stripe Checkout
+      const { error } = await stripe.redirectToCheckout({ sessionId });
+      if (error) toast.error("Failed to redirect to payment.");
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Payment failed.");
+    }
+  };
 
   return (
     <div className="p-6 bg-gray-950 rounded-lg shadow-lg text-white">
@@ -63,6 +81,14 @@ const MyRentRequests = () => {
                 </span>
               </p>
               <p className="text-sm text-gray-400">Requested on: {new Date(request.createdAt).toLocaleDateString()}</p>
+              {request.paid === false && (
+                <button
+                  onClick={() => handlePayment(request._id, request.totalPrice)}
+                  className="bg-cyan-600 hover:bg-cyan-700 text-white py-2 px-4 rounded"
+                >
+                  Pay Now
+                </button>
+              )}
             </div>
           ))}
         </div>
