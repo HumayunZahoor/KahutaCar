@@ -93,7 +93,7 @@ const ManageRentRequests = () => {
                   <td className="px-4 py-2">{request.customerId?.name || "N/A"}</td>
                   <td className="px-4 py-2">{request.requested_vehicle}</td>
                   <td className="px-4 py-2">{request.package || `${request.days} Days`}</td>
-                  <td className="px-4 py-2">${request.totalPrice}</td>
+                  <td className="px-4 py-2">Rs. {request.totalPrice}</td>
                   <td className="px-4 py-2">
                     <span
                       className={`px-2 py-1 rounded ${
