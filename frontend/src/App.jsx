@@ -10,7 +10,6 @@ import RegisterVehicle from './Dashboard/vehicleRegistration/RegisterVehicle';
 import RegisterDriver from './Dashboard/driverRegistration/RegisterDriver';
 import DriverProfile from './Dashboard/profiles/DriverProfile';
 import LocationButton from './Dashboard/LocationButton/LocationButton';
-import LiveLocationMap from './Dashboard/LocationButton/LiveLocationMap';
 import Management from './Dashboard/managment/Management';
 import AllotVehicleToDriver from './Dashboard/AllotVehicleToDriver/AllotVehicleToDriver';
 import Vehicle from './Dashboard/vehicleProfile/Vehicle';
@@ -37,7 +36,6 @@ export default function App() {
           <Route path="register-driver" element={<RegisterDriver />} />
           <Route path="driver-profile" element={<DriverProfile />} />
           <Route path="location" element={<LocationButton />} />
-          <Route path="live-location" element={<LiveLocationMap />} />
           <Route path="management" element={<Management />} />
           <Route path="allot-vehicle-to-driver" element={<AllotVehicleToDriver />} />
           <Route path="vehicle" element={<Vehicle />} />

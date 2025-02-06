@@ -44,7 +44,6 @@ export default function DashboardLayout() {
         { href: '/KahutaCarGo/Dashboard', icon: <RiDashboardFill size="18" className="text-cyan-500" />, label: 'Dashboard' },
         { href: '/KahutaCarGo/driver-profile', icon: <RiDashboardFill size="18" className="text-cyan-500" />, label: 'Profile' },
         { href: '/KahutaCarGo/location', icon: <RiDashboardFill size="18" className="text-cyan-500" />, label: 'Location' },
-        { href: '/KahutaCarGo/live-location', icon: <RiDashboardFill size="18" className="text-cyan-500" />, label: 'Live Location' },
         { href: '/KahutaCarGo/register-vehicle', icon: <RiDashboardFill size="18" className="text-cyan-500" />, label: 'Register Vehicle' },
         { href: '/KahutaCarGo/vehicle', icon: <RiDashboardFill size="18" className="text-cyan-500" />, label: 'Vehicle' },
         { href: '/KahutaCarGo/manage-ride', icon: <RiDashboardFill size="18" className="text-cyan-500" />, label: 'Manage Ride' },
