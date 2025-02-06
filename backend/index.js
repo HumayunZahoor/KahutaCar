@@ -17,7 +17,18 @@ dotenv.config();
 
 const app = express();
 
-mongoose.connect(process.env.MONGODB_URL);
+mongoose.connect(process.env.MONGODB_URL).then(async () => {
+  console.log("Connected to MongoDB")
+  try {
+    
+      console.log('Connected to MongoDB Now...!');
+
+  } catch (err) {
+    console.error('Error checking Admin:', err);
+  }
+}
+
+).catch((err) => console.error('Error connecting to MongoDB:', err))
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
