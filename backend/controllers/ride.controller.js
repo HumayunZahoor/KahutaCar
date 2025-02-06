@@ -118,8 +118,6 @@ export const getMyRides = async (req, res) => {
 
 // ------------------------------------------------
 
-// const stripe = new Stripe('sk_test_51PrAEqKzHh91dh6pWPuz8kVAlRuAQRrQUP03KsYktxHtBC60L2NjjFgduMtZo2SKwNCX5dDPdrWxjX7d5OwZO6M400yk1AlAXi');
-
 
 export const updateRideStatusbyCustomer = async (req, res) => {
   try {

@@ -5,8 +5,7 @@ import axios from "axios";
 import { toast } from "react-toastify";
 import { loadStripe } from "@stripe/stripe-js";
 
-// Load Stripe with your public key
-// const stripePromise = loadStripe('pk_test_51PrAEqKzHh91dh6pmnjWOwenujoLxq8wPkJ8guDBw93dCHNtm2KO3rrVOt0gGlkOoxfzLNjjnHixrt4Z0f4xWujy00vfSDjdRd');
+
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY);
 
 const MyRide = () => {
