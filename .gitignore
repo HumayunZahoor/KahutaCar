@@ -3,3 +3,8 @@ node_modules/
 .env
 .DS_Store
 dist/
+# Ignore environment files
+frontend/.env
+backend/.env
+
+
