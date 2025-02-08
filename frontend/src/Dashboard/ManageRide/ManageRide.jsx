@@ -3,6 +3,7 @@ import { useSelector } from "react-redux";
 import axios from "axios";
 import { FaCheckCircle, FaTimesCircle } from "react-icons/fa";
 import { toast } from "react-toastify";
+import GetLocationName from "./GetLocationName";
 
 const ManageRide = () => {
     const auth = useSelector((state) => state.auth);
@@ -10,31 +11,46 @@ const ManageRide = () => {
 
     const [rides, setRides] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [errorMessage, setErrorMessage] = useState(""); // Track error message
+    const [errorMessage, setErrorMessage] = useState("");
+    const [locationNames, setLocationNames] = useState({});
 
     useEffect(() => {
         const fetchRides = async () => {
             try {
-                setLoading(true); // Set loading to true
+                setLoading(true);
                 const response = await axios.get(`${import.meta.env.VITE_APP_BACKEND_URL}/ride/get-rides?userId=${userId}`);
                 setRides(response.data);
             } catch (err) {
-                if (!errorMessage) { // Only show toast once
-                    // toast.error("Failed to fetch rides.");
-                    setErrorMessage("Failed to fetch rides."); // Prevent repeated toasts
+                if (!errorMessage) {
+                    setErrorMessage("Failed to fetch rides.");
                 }
                 console.error("Error fetching rides:", err);
             } finally {
-                setLoading(false); // Set loading to false when the fetch is complete or failed
+                setLoading(false);
             }
         };
 
         fetchRides();
-    }, [userId, errorMessage]); // Depend on errorMessage to avoid multiple toast calls
+    }, [userId, errorMessage]);
+
+    useEffect(() => {
+        rides.forEach((ride) => {
+            const startCoords = ride.startLocation.coordinates;
+            const endCoords = ride.endLocation.coordinates;
+
+            GetLocationName(startCoords[1], startCoords[0], (name) => {
+                setLocationNames((prev) => ({ ...prev, [ride._id + "_start"]: name }));
+            });
+
+            GetLocationName(endCoords[1], endCoords[0], (name) => {
+                setLocationNames((prev) => ({ ...prev, [ride._id + "_end"]: name }));
+            });
+        });
+    }, [rides]);
 
     const handleAccept = async (rideId) => {
         try {
-            const response = await axios.post(`${import.meta.env.VITE_APP_BACKEND_URL}/ride/update-ride-status`, {
+            await axios.post(`${import.meta.env.VITE_APP_BACKEND_URL}/ride/update-ride-status`, {
                 rideId,
                 status: "Accepted",
             });
@@ -52,7 +68,7 @@ const ManageRide = () => {
 
     const handleReject = async (rideId) => {
         try {
-            const response = await axios.post(`${import.meta.env.VITE_APP_BACKEND_URL}/ride/update-ride-status`, {
+            await axios.post(`${import.meta.env.VITE_APP_BACKEND_URL}/ride/update-ride-status`, {
                 rideId,
                 status: "Rejected",
             });
@@ -94,12 +110,8 @@ const ManageRide = () => {
                                 {rides.map((ride) => (
                                     <tr key={ride._id} className="bg-gray-900">
                                         <td className="px-4 py-2">{ride.customerId.name}</td>
-                                        <td className="px-4 py-2">
-                                            {ride.startLocation.coordinates[0]}, {ride.startLocation.coordinates[1]}
-                                        </td>
-                                        <td className="px-4 py-2">
-                                            {ride.endLocation.coordinates[0]}, {ride.endLocation.coordinates[1]}
-                                        </td>
+                                        <td className="px-4 py-2">{locationNames[ride._id + "_start"] || "Fetching..."}</td>
+                                        <td className="px-4 py-2">{locationNames[ride._id + "_end"] || "Fetching..."}</td>
                                         <td className="px-4 py-2">{ride.driver_status}</td>
                                         <td className="px-4 py-2">
                                             <button
@@ -117,7 +129,6 @@ const ManageRide = () => {
                                             >
                                                 {ride.driver_status === 'Rejected' ? 'Rejected' : <><FaTimesCircle /> Reject</>}
                                             </button>
-
                                         </td>
                                     </tr>
                                 ))}

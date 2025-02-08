@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const getLocationName = async (lat, lon, callback) => {
+const GetLocationName = async (lat, lon, callback) => {
   try {
     console.log("📍 Fetching location for:", lat, lon); // Debugging log
 
@@ -21,4 +21,4 @@ const getLocationName = async (lat, lon, callback) => {
   }
 };
 
-export default getLocationName;
+export default GetLocationName;

@@ -165,8 +165,8 @@ export const updateRideStatusbyCustomer = async (req, res) => {
           },
         ],
         mode: 'payment',
-        success_url: `${process.env.FRONTEND_URL}/KahutaCarGo/Success?session_id={CHECKOUT_SESSION_ID}`,
-        cancel_url: `${process.env.FRONTEND_URL}/KahutaCarGo/Cancel`,
+        success_url: `${process.env.CORS_ORIGIN}/KahutaCarGo/Success?session_id={CHECKOUT_SESSION_ID}`,
+        cancel_url: `${process.env.CORS_ORIGIN}/KahutaCarGo/Cancel`,
         metadata: {
           rideId: ride._id.toString(), // Passing ride ID to metadata
           rideName: "Ride Payment", // Dummy name
@@ -316,8 +316,8 @@ export const payRent = async (req, res) => {
         },
       ],
       mode: "payment",
-      success_url: `${process.env.FRONTEND_URL}/KahutaCarGo/Success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${process.env.FRONTEND_URL}/KahutaCarGo/Cancel`,
+      success_url: `${process.env.CORS_ORIGIN}/KahutaCarGo/Success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${process.env.CORS_ORIGIN}/KahutaCarGo/Cancel`,
       metadata: { rentRequestId, userId },
     });
 

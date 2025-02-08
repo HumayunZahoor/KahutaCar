@@ -17,24 +17,24 @@ const Bookride = () => {
   const [selectedVehicleType, setSelectedVehicleType] = useState("");
 
   const [startLocationName, setStartLocationName] = useState(""); // Store the start location name
-  const [endLocationName, setEndLocationName] = useState(""); // Store the end location name
+  const [driverLocations, setDriverLocations] = useState({}); // Store driver locations
 
   const getLocation = async () => {
     setLoading(true);
 
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
-        (position) => {
+        async (position) => {
           const lat = position.coords.latitude;
           const lon = position.coords.longitude;
           setLocation({ lat, lon });
 
-          // Wait for the location name to be fetched before updating the state
+          // Fetch the user's location name
           getLocationName(lat, lon, (locationName) => {
-            setStartLocationName(locationName); // Update the start location name after fetching it
+            setStartLocationName(locationName);
           });
 
-          getDriversAndVehicles(lat, lon);
+          await getDriversAndVehicles(lat, lon);
         },
         (error) => {
           console.error("Error occurred while getting location:", error);
@@ -73,6 +73,19 @@ const Bookride = () => {
       setDrivers(filtered);
       setVehicles(allVehicles);
       setFilteredDrivers(filtered);
+
+      // Fetch and store driver location names
+      filtered.forEach((driver) => {
+        const driverLat = driver.location.coordinates[1];
+        const driverLon = driver.location.coordinates[0];
+
+        getLocationName(driverLat, driverLon, (locationName) => {
+          setDriverLocations((prev) => ({
+            ...prev,
+            [driver._id]: locationName,
+          }));
+        });
+      });
     } catch (err) {
       console.error("Error fetching data:", err);
       toast.error("Failed to fetch drivers and vehicles.");
@@ -89,8 +102,7 @@ const Bookride = () => {
         Math.cos(lat2 * (Math.PI / 180)) *
         Math.sin(dLon / 2) * Math.sin(dLon / 2);
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    const distance = R * c;
-    return distance;
+    return R * c;
   };
 
   const handleBookRide = async (driverId) => {
@@ -100,7 +112,7 @@ const Bookride = () => {
     }
 
     try {
-      const response = await axios.post(
+      await axios.post(
         `${import.meta.env.VITE_APP_BACKEND_URL}/ride/book-ride`,
         {
           customerId: userId,
@@ -171,7 +183,7 @@ const Bookride = () => {
         </div>
 
         <div className="mt-8">
-          {filteredDrivers.length > 0 && (
+          {filteredDrivers.length > 0 ? (
             <div>
               <h3 className="text-xl font-semibold text-cyan-600 mb-4">Available Drivers</h3>
               <table className="min-w-full table-auto">
@@ -179,6 +191,7 @@ const Bookride = () => {
                   <tr>
                     <th className="px-4 py-2 text-left">Name</th>
                     <th className="px-4 py-2 text-left">Vehicle Type</th>
+                    <th className="px-4 py-2 text-left">Location</th>
                     <th className="px-4 py-2 text-left">Action</th>
                   </tr>
                 </thead>
@@ -187,6 +200,7 @@ const Bookride = () => {
                     <tr key={driver._id} className="bg-gray-900">
                       <td className="px-4 py-2">{driver.name}</td>
                       <td className="px-4 py-2">{driver.vehicleType}</td>
+                      <td className="px-4 py-2">{driverLocations[driver._id] || "Fetching..."}</td>
                       <td className="px-4 py-2">
                         <button
                           className="px-4 py-2 bg-green-500 text-white rounded"
@@ -200,8 +214,9 @@ const Bookride = () => {
                 </tbody>
               </table>
             </div>
+          ) : (
+            <p className="text-gray-400">No drivers available in your range.</p>
           )}
-          {filteredDrivers.length === 0 && <p className="text-gray-400">No drivers available in your range.</p>}
         </div>
       </div>
     </div>

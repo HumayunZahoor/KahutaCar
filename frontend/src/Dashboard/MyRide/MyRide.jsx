@@ -4,6 +4,7 @@ import { useSelector } from "react-redux";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { loadStripe } from "@stripe/stripe-js";
+import LocationName from "./LocationName";
 
 
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY);
@@ -15,6 +16,7 @@ const MyRide = () => {
   const [rides, setRides] = useState([]);
   const [loading, setLoading] = useState(true);
   const [location, setLocation] = useState(null);
+  const [locationNames, setLocationNames] = useState({});
 
   useEffect(() => {
     const fetchRides = async () => {
@@ -32,6 +34,18 @@ const MyRide = () => {
 
     fetchRides();
   }, [customerId]);
+
+  useEffect(() => {
+    rides.forEach((ride) => {
+      LocationName(ride.startLocation.coordinates[1], ride.startLocation.coordinates[0], (name) => {
+        setLocationNames((prev) => ({ ...prev, [ride._id + "_start"]: name }));
+      });
+      
+      LocationName(ride.endLocation.coordinates[1], ride.endLocation.coordinates[0], (name) => {
+        setLocationNames((prev) => ({ ...prev, [ride._id + "_end"]: name }));
+      });
+    });
+  }, [rides]);
 
   const getLocation = async () => {
     setLoading(true);
@@ -54,6 +68,7 @@ const MyRide = () => {
 
     setLoading(false);
   };
+
 
   const getDistance = (lat1, lon1, lat2, lon2) => {
     const R = 6371; // Radius of Earth in kilometers
@@ -186,12 +201,8 @@ const MyRide = () => {
                   .map((ride) => (
                     <tr key={ride._id} className="bg-gray-900">
                       <td className="px-4 py-2">{ride.driverId.name}</td>
-                      <td className="px-4 py-2">
-                        {ride.startLocation.coordinates[0]}, {ride.startLocation.coordinates[1]}
-                      </td>
-                      <td className="px-4 py-2">
-                        {ride.endLocation.coordinates[0]}, {ride.endLocation.coordinates[1]}
-                      </td>
+                      <td className="px-4 py-2">{locationNames[ride._id + "_start"] || "Fetching..."}</td>
+                      <td className="px-4 py-2">{locationNames[ride._id + "_end"] || "Fetching..."}</td>
                       <td className="px-4 py-2">{ride.status}</td>
                       <td className="px-4 py-2">
                         <button
